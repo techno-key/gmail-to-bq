@@ -7,13 +7,24 @@ import email
 import io
 from google.oauth2 import service_account
 from google.cloud import bigquery
-from utils import unzip_csv , send_email, get_uploadparams
+from utils import unzip_csv , send_email, get_uploadparams , LOGGING
 import pandas_gbq
 import csv
 from urllib.request import urlopen
 
 
 uploadparms_sheet, upload_params = get_uploadparams()
+
+#logging integration
+import logging
+import logging.config
+import ecs_logging
+
+logging.config.dictConfig(LOGGING)
+handler = logging.FileHandler('formatted.json')
+logger = logging.getLogger("Gmail to BigQuery Common")
+handler.setFormatter(ecs_logging.StdlibFormatter())
+logger.addHandler(handler)
 
 # gmail account credentials
 #username=upload_params.loc[param_ID,'Username']
@@ -112,8 +123,10 @@ class Email_To_BQ():
                         df['updated_datetime'] = df['updated_datetime'].apply(lambda x: pd.Timestamp(x, tz='Asia/Kolkata'))    #converting string back to timestamp
                         
                         # Uploading data to gbq
-                        pandas_gbq.to_gbq(df, upload_params.loc[self.param_ID,'Destination Table'], upload_params.loc[self.param_ID,'Project ID'], 
-                                                credentials=credentials, if_exists=upload_params.loc[self.param_ID, 'IF Exists'])
+                        #pandas_gbq.to_gbq(df, upload_params.loc[self.param_ID,'Destination Table'], upload_params.loc[self.param_ID,'Project ID'],
+                          #                      credentials=credentials, if_exists=upload_params.loc[self.param_ID, 'IF Exists'])
+
+                        logger.info(f"successfully ingested {len(df)} rows in {upload_params.loc[self.param_ID,'Destination Table']}")
 
                         print("  ", df.head())
 
@@ -128,6 +141,8 @@ class Email_To_BQ():
 
 
                     except Exception as e:
+                        logger.exception('ERROR')
+                        print(logger.exception('Error'))
                         dest_table = upload_params.loc[self.param_ID,'Destination Table']
                         send_email(from_email=upload_params.loc[self.param_ID,'Error_From_Email'],                   #send an email if there is an error in uploading
                                     from_email_pass=upload_params.loc[self.param_ID,'Error_From_Email_Password'],
@@ -142,7 +157,7 @@ class Email_To_BQ():
 
 
 if __name__ == '__main__':
-
+    logger.info('Gmail to BigQuery Common Script has started')
     param_id_list = upload_params.index.to_list()
     for param_ID in param_id_list:
         #date = (datetime.today().date() - timedelta(days = 2)).strftime('%d-%b-%Y')
@@ -159,6 +174,7 @@ if __name__ == '__main__':
             if (upload_params.loc[param_ID, 'Last Run Date'].date() + timedelta(days = run_gap) <= today_date) & (upload_params.loc[param_ID, 'Time to Run'] <= hour_now):
                 print('Running...')
                 obj = Email_To_BQ(last_run_date,param_ID=param_ID)
+                logger.info(f'Running for {upload_params.iloc[param_ID]["Report Name"]}')
                 obj.run()
                 #upload_params.loc[param_ID, 'Last Run Date'] = today_date.strftime('%Y-%m-%d')      #updating last run date
             else:
@@ -171,10 +187,12 @@ if __name__ == '__main__':
             if upload_params.loc[param_ID, 'Last Run Date'].date() < today_date:
                 print('Running...')
                 obj = Email_To_BQ(last_run_date,param_ID=param_ID)
+                logger.info(f'Running for {upload_params.iloc[param_ID]["Report Name"]}')
                 obj.run()
             elif (upload_params.loc[param_ID, 'Last Run Date'].date() == today_date) & (int(upload_params.loc[param_ID, 'Last Run Hour']) + int(run_gap) <= hour_now):
                 print('Running...')
                 obj = Email_To_BQ(last_run_date,param_ID=param_ID)
+                logger.info(f'Running for {upload_params.iloc[param_ID]["Report Name"]}')
                 obj.run()
 
 
@@ -184,3 +202,4 @@ if __name__ == '__main__':
     upload_params = upload_params.reset_index()
     uploadparms_sheet.update([upload_params.columns.values.tolist()] + upload_params.values.tolist())
 
+    logger.info('Gmail to BigQuery Common Script has Stopped')

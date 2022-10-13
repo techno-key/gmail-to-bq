@@ -68,5 +68,34 @@ def get_uploadparams():
     upload_params['Last Run Date'] = pd.to_datetime(upload_params['Last Run Date'], format='%Y-%m-%d')
     return uploadparms_sheet, upload_params
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'logzioFormat': {
+            'format': '{"additional_field": "value"}',
+            'validate': False
+        }
+    },
+    'handlers': {
+        'logzio': {
+            'class': 'logzio.handler.LogzioHandler',
+            'level': 'INFO',
+            'formatter': 'logzioFormat',
+            'token': 'mvQqDSvpKoEkPUtzZOkdMExuCnXTAQoh',
+            'logzio_type': 'python',
+            'logs_drain_timeout': 1,
+            'url': 'https://listener.logz.io:8071'
+        }
+    },
+    'loggers': {
+        '': {
+            'level': 'INFO',
+            'handlers': ['logzio'],
+            'propagate': True
+        }
+    }
+}
+
 
 ####
