@@ -1,4 +1,4 @@
-# gmail-to-bq-common
+# Gmail to BQ (General)
 
 Exporting data directly from email to google bigquery table.
 This solution enables users to regularly upload data from email by searching email inbox directly to BigQuery table.
