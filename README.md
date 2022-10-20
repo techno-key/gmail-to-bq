@@ -7,7 +7,8 @@ The functional steps in this process are broadly listed below:
 
 - **Searching Inbox :** Searching for a desired email(s) based on a search query. Enlisting all the emails that qualify and then look for attachements if any.
 - **Extracting data from Attachemtns and reading it :** This is done while also checking if the file is already ingested in to the table by referring ingested_files logs. If the file is already successfully ingested then nothing is done.
-- **Transforming and uploading to respecting Tables in gbq :** Necessary tranformations are made and the data is uploaded to gbq table.
+- **Transforming and uploading to respective Tables in gbq :**  Columns are filtered, necessary modifications are made to the column names and the data is uploaded to gbq table.
+- **Updated Datetime:** A column with the Timestamp value of the DateTime of email is added to the data(corresponding to timezone = 'Asia/Kolkata').
 - **Cloud Scheduler :** A Cloud Scheduler job is used to schedule run the script periodically to upload data as it comes.
 
 
