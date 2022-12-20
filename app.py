@@ -38,7 +38,8 @@ class Email_To_BQ():
         self.mail = imaplib.IMAP4_SSL('imap.gmail.com')
         self.mail.login(upload_params.loc[param_ID,'Username'], upload_params.loc[param_ID,'Password'])
         self.mail.select("inbox") # connect to inbox.
-        self.search_query = 'FROM ('+upload_params.loc[param_ID,'From_Email']+') SUBJECT ('+upload_params.loc[param_ID,'Search Query']+') after :"' + start_date + '"'
+        self.search_query = '(FROM "'+upload_params.loc[param_ID,'From_Email']+'" SUBJECT "'+upload_params.loc[param_ID,'Search Query']+'") SINCE "' + start_date + '"'
+        #'from:('+upload_params.loc[param_ID,'From_Email']+') SUBJECT:('+upload_params.loc[param_ID,'Search Query']+') after :"' + start_date + '"'
         self.already_ingested_files = list(pd.read_csv('Ingested_files/' + upload_params.loc[param_ID, 'Ingested File Name'])['filename'])        # column name in ingested file
 
     def our_id_list(self):
@@ -123,8 +124,8 @@ class Email_To_BQ():
                         df['updated_datetime'] = df['updated_datetime'].apply(lambda x: pd.Timestamp(x, tz='Asia/Kolkata'))    #converting string back to timestamp
                         
                         # Uploading data to gbq
-                        #pandas_gbq.to_gbq(df, upload_params.loc[self.param_ID,'Destination Table'], upload_params.loc[self.param_ID,'Project ID'],
-                          #                      credentials=credentials, if_exists=upload_params.loc[self.param_ID, 'IF Exists'])
+                        pandas_gbq.to_gbq(df, upload_params.loc[self.param_ID,'Destination Table'], upload_params.loc[self.param_ID,'Project ID'],
+                                               credentials=credentials, if_exists=upload_params.loc[self.param_ID, 'IF Exists'])
 
                         logger.info(f"successfully ingested {len(df)} rows in {upload_params.loc[self.param_ID,'Destination Table']}")
 
