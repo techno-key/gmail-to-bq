@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "swiggy-329413",
+  "private_key_id": "625299ff651e661ae246ba64d7c29fcd3a113053",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCWCmV0ek2nVfGi\n36tS/rpbfRVTe5CNK5/S8Q8qCsuCFFsXTsAApClH9lFOqDUGoQ5F8bxDF4K1Okmi\nR49K+jaHcb9Ln3x+EFSQ0QXpGeW/kEInStl8wHlB3aGrm018t4eNEARGF5z7Dg9u\n+0S4WLWAhc49BRylhJZYVIuSAIxDzanWCf3hA0dm41M7qEODWZPr2WWlJRDdVY3w\nzyo2bAfIOa/RNLsVwB+1keor7hGuO48Dj9Kcxl1NdivmFQcLQ8PhFP26m+J2Luf0\noXth4gNQGYoTd2ziacvCPzwNf0HiT6+e4NvW39iuah7IWVjxEjAgL2xH2Z30SHMW\nKEDmCov3AgMBAAECggEAFhnK7vjS9mqY8MJclJmT7sUCfq0NUlYSMTqz3p//cRY5\ngrnlW1LTB9gXCuyI/wR7Oz9L2WAdrz86OG6tA0DPBm1xXZzM9C7InhpD8h2P84M2\n013ZomAhnFuepE34gH3yOAubbY2t4GcmS9U0PqlGdvt+sQtPOGxKzxEJDAULpDLt\n1VLiGpZaOqR1yM7B0ELyRf1HAHgtwvlPHrU8wOmZymwJQlMfX3jY24npJG9AvZNI\ngC4XFNoKWBs4FYPikQ3qCEU5BK4PdAheqU8CBTaSaIne1SScUJiWEWU8oJTEraWu\nJlN/9jJbTRYRlWvnLT/BTvgc0rjEQmzndiK0yVpIEQKBgQDPKlFGO2cs5o/sPZvM\nGzc1Quhv7n/NX9tU+APKgluSUcY/1t0EyEX4BMfIcWzC1Sl9Isb1hd+qjK6Hq2oy\noHTejBo5d98GKDkBWp5k/NRXErBCtMzf9I19iELy5SdRhp00D8GSHBRXoKsG4oy4\nGRztQI8vVttFDZ6fCM0mPhJDhwKBgQC5aM8FjAHIIj67mADBUHxcU/XMvDkWRXsf\nJ7/4xDEO9A/rpwKbmHrgJUsMaVVmvvmybKEobl7WOz4LE5DnxxFgWR981a1ALBL5\nPVnBdlCTpATGkTZztEcGxZlsO8+myKddBby5E8VFsVTk3MG591hOxkoLP9hVPIAr\nkDxAYK9wEQKBgQCDB0XugOXqDU4cYn8m4lPR2SbAnP2yfR1xqYhkTnzyl8wnVpPm\nUXGHxCZEThE3TbF3F0b1xZ3I9j/xSWba7IfetohjrsCd2VTs2U7zmsIG7KgVGNu4\nDqprKoMFtBBhTR4i7pBFBIONRO7HZQUR77hPCxVFIM+A5nNcLSnsNThCAwKBgBTh\npfc09npoyPHtw6ACBY+McTF2vWMxvhUbL/a/edr6R9S9gYCuoqAd8x7ZuiGRPqQG\nsfvQumOcVnd+46IG/IECaJZxpkqE7Dof27z7K0YFgfgvIJfVZO5xUL8s2U0qahcC\n72dUv7ICr9H6vuLH5a0xjeNIdH/dCX5ehzqk6P1RAoGBAL7KPM9IqNX2B6o9P+nV\nAYU8Kuf0JdfxBJyu5Nlu52FSFWBPC+Np78mdfjMk992pRKKRBfuoFSKrqzWx5B8p\n+FYfnBMgrLsV4LKfwcp/U6etB0Vju7289NvAWzDapq6eA0jeeiAtwEA9wBqr3OWp\nNfXMM/YQC8wK+uDgl2X3FyHf\n-----END PRIVATE KEY-----\n",
+  "client_email": "swiggy@swiggy-329413.iam.gserviceaccount.com",
+  "client_id": "109614896632601454741",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/swiggy%40swiggy-329413.iam.gserviceaccount.com"
+}
