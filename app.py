@@ -110,6 +110,7 @@ class Email_To_BQ():
                         else:
                             print("Invalid file type")
 
+            
                         df['updated_datetime'] = email_date
                         df = df.astype(str)
                         df = df.fillna('')
@@ -173,7 +174,7 @@ if __name__ == '__main__':
             run_gap = int(upload_params.loc[param_ID, 'Run Gap'])
 
             if (upload_params.loc[param_ID, 'Last Run Date'].date() + timedelta(days = run_gap) <= today_date) & (upload_params.loc[param_ID, 'Time to Run'] <= hour_now):
-                print('Running...')
+                print('Running...',{upload_params.iloc[param_ID]["Report Name"]})
                 obj = Email_To_BQ(last_run_date,param_ID=param_ID)
                 logger.info(f'Running for {upload_params.iloc[param_ID]["Report Name"]}')
                 obj.run()
@@ -186,12 +187,12 @@ if __name__ == '__main__':
             run_gap = int(upload_params.loc[param_ID, 'Run Gap'])
 
             if upload_params.loc[param_ID, 'Last Run Date'].date() < today_date:
-                print('Running...')
+                print('Running...',{upload_params.iloc[param_ID]["Report Name"]})
                 obj = Email_To_BQ(last_run_date,param_ID=param_ID)
                 logger.info(f'Running for {upload_params.iloc[param_ID]["Report Name"]}')
                 obj.run()
             elif (upload_params.loc[param_ID, 'Last Run Date'].date() == today_date) & (int(upload_params.loc[param_ID, 'Last Run Hour']) + int(run_gap) <= hour_now):
-                print('Running...')
+                print('Running...',{upload_params.iloc[param_ID]["Report Name"]})
                 obj = Email_To_BQ(last_run_date,param_ID=param_ID)
                 logger.info(f'Running for {upload_params.iloc[param_ID]["Report Name"]}')
                 obj.run()

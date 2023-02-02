@@ -1,7 +1,7 @@
 from fileinput import filename
 import imaplib
 import pandas as pd,traceback,re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,date
 import pytz
 import email
 import io,zipfile
@@ -33,6 +33,7 @@ logger.addHandler(handler)
 
 class Email_To_BQ():
     def __init__(self, start_date, param_ID):
+        start_date = (date.today() - timedelta(0)).strftime('%d-%b-%Y') 
         self.start_date = start_date
         self.param_ID = param_ID
         self.mail = imaplib.IMAP4_SSL('imap.gmail.com')
@@ -172,7 +173,7 @@ class Email_To_BQ():
                         #print('plain_text:-',plain_text)
                         #if ('"Onboarding Checkout"' in plain_text) or ('"Onboarding Install to Reg"' in plain_text) or ('"Subscribe - Segment 1 Reg to ATC"' in plain_text) or ('"Subscribe - Segment 2 ATC to Checkout"' in plain_text) or ('"Subscribe - Active Base Onetime"' in plain_text): 
                         word_list = plain_text.replace('=\r\n','').replace('<br>','')  #.split(" ")
-                        ls = ["Onboarding Checkout","Onboarding Install to Reg","Subscribe - Segment 1 Reg to ATC","Subscribe - Segment 2 ATC to Checkout","Subscribe - Active Base Onetime"]
+                        ls = ['Daily - New - Onboarding Segment','Daily - New - Onboarding Install to Registration','Daily - New - Retention ATC Drop Funnel','Daily - New - Retention Checkout Drop Funnel']#,'Subscribe - Active Base Onetime']#["Onboarding Install to Reg","Subscribe - Segment 1 Reg to ATC","Subscribe - Segment 2 ATC to Checkout","Subscribe - Active Base Onetime"]
                         #check = [t for t in [word_list.find(i) for i in ls] if t>0 ]
                         #f = False
                         #flag = [a for a in check if check>0]
@@ -182,11 +183,11 @@ class Email_To_BQ():
                         #else:
                         for l in ls:
                             if l in word_list:
-                                print("word_list:-",word_list)
+                                #print("word_list:-",word_list)
                                 word_list = word_list.split(" ")
                                 file_url = [k for k in word_list  if ('https:' in k) or ('file' in k)]
                                 file_url = [p.replace('=\r\n','').replace('<br>','') for p in file_url if 'file' in p][0]
-                                print('file_url:-',file_url)
+                                #print('file_url:-',file_url)
                     fileName = 'ak.csv'
 
 
@@ -214,12 +215,13 @@ class Email_To_BQ():
                                 for one_file in csv_files:
                                     fil = one_file.replace('-_','').split('/')[-1].split('.')
                                     #table_name = (one_file.split("_"))[:-1:]
-                                    table_name = '_'.join(fil[0].split('_')[:-1:]).replace('1','one').replace('2','two')
-                                    #print(filename)
+                                    table_name = '_'.join(fil[0].split('_')[:-1:])#.replace('1','one').replace('2','two')
+                                    print('ingesting with this filename',table_name)
                                     one_file = zf.open(one_file)
 
                                     try:
                                         df = pd.read_csv(one_file)
+                                     #   print(df)
                                     except:
                                         try:
                                             df = pd.read_excel(one_file)
@@ -229,7 +231,7 @@ class Email_To_BQ():
                                     df['updated_datetime'] = email_date
                                     df = df.astype(str)
                                     df = df.fillna('')
-                                    print(df.head())
+                                    #print(df.head(2))
 
                                     def column_name_formatting(x):
                                         x=x.strip()
@@ -254,21 +256,24 @@ class Email_To_BQ():
                                     col_rename = {}
                                     for col in df.columns:
                                         col_new = column_name_formatting(col)
-                                        col_rename[col] = col_new
+                                        col_rename[col] = col_new.strip()
                                         #df[col] = col.replace("/","")
-                                        print("collllll:-",col)
+                                      #  print("collllll:-",col)
                                     #print("col_new:-",col_rename)
                                     df.rename(columns = col_rename, inplace = True)
-                                    print('columns = ', df.columns)
+                                    #print('columns = ', df.columns)
                                     #df = df.loc[:,upload_params.loc[self.param_ID,'Input Column Names'].split(',') + ['updated_datetime']]
                                     #df.columns = upload_params.loc[self.param_ID,'Destination Column Names'].split(',') + ['updated_datetime']
 
                                     #df['updated_datetime'] = df['updated_datetime'].apply(lambda x: pd.Timestamp(x, tz='Asia/Kolkata'))    #converting string back to timestamp
-                                    
+                                    df = df.astype(str)
+                                    df =df.fillna('nan')
+                                    print(df.columns)
+                                    print(df.head(2))
                                     # Uploading data to gbq
                                     df.to_gbq(upload_params.loc[self.param_ID,'Destination Table'] + '.' + table_name, upload_params.loc[self.param_ID,'Project ID'],
                                                         credentials=credentials, if_exists=upload_params.loc[self.param_ID, 'IF Exists'])
-
+                                    print('ingested')
                         except Exception as e:
                             traceback.print_exc()
                             logger.exception('ERROR')
