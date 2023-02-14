@@ -170,38 +170,19 @@ class Email_To_BQ():
 
                     if upload_params.loc[self.param_ID, 'File Type'] in ['url_zip_files']:      # if data is in link, search for link in email body
                         plain_text = part.get_payload()
-                        #print('plain_text:-',plain_text)
-                        #if ('"Onboarding Checkout"' in plain_text) or ('"Onboarding Install to Reg"' in plain_text) or ('"Subscribe - Segment 1 Reg to ATC"' in plain_text) or ('"Subscribe - Segment 2 ATC to Checkout"' in plain_text) or ('"Subscribe - Active Base Onetime"' in plain_text): 
+
                         word_list = plain_text.replace('=\r\n','').replace('<br>','')  #.split(" ")
-                        #ls = ['Daily - New - Onboarding Segment','Daily - New - Onboarding Install to Registration','Daily - New - Retention ATC Drop Funnel','Daily - New - Retention Checkout Drop Funnel','Bisleri Campaign Automation']#,'Subscribe - Active Base Onetime']#["Onboarding Install to Reg","Subscribe - Segment 1 Reg to ATC","Subscribe - Segment 2 ATC to Checkout","Subscribe - Active Base Onetime"]
-                        #check = [t for t in [word_list.find(i) for i in ls] if t>0 ]
-                        #f = False
 
-                        #flag = [a for a in check if check>0]
-                        #if ('"Onboarding Checkout"' in word_list) or ('"Onboarding Install to Reg"' in word_list) or ('"Subscribe - Segment 1 Reg to ATC"' in word_list) or ('"Subscribe - Segment 2 ATC to Checkout"' in word_list) or ('"Subscribe - Active Base Onetime"' in word_list): 
-                        #if -1 in check:
-                        #    pass
-                        #else:
-                      #  import pdb;pdb.set_trace()
                         ls = upload_params.loc[self.param_ID,'File Names'].split(',')
+
                         for l in ls:
-                            print(l,word_list)
                             if l in word_list:
-                                
-                                print("word_list:-",word_list)
+                                print("word_list:-", word_list)
                                 word_list = word_list.split(" ")
-                                file_url = [k for k in word_list  if ('https:' in k) or ('file' in k)]
-                                file_url = [p.replace('=\r\n','').replace('<br>','') for p in file_url if 'file' in p][0]
-                                print('file_url:-',file_url)
-                            else:
-                                print('Filename Not Matching')
-                                file_url = None
-                    fileName = 'ak.csv'
+                                file_url = [k for k in word_list if ('https:' in k) or ('file' in k)]
+                                file_url = [p.replace('=\r\n', '').replace('<br>', '') for p in file_url if 'file' in p][0]
+                                print('file_url:-', file_url)
 
-
-                    if file_url is not None:  #not in self.already_ingested_files: #& (str(upload_params.loc[param_ID, 'Attachment File Name']).lower() in str(fileName).lower()):
-                        #print(fileName)
-                        #print(fileName.split(".csv")[0][-10:])
                         try:
                             if upload_params.loc[self.param_ID, 'File Type'] in ['url_zip_files']:
                        #         print("urllll:-",file_url)
@@ -243,7 +224,7 @@ class Email_To_BQ():
 
                                     def column_name_formatting(x):
                                         x=x.strip()
-                                        specialChars = "!#$%^&*()[]-:₹,'/" 
+                                        specialChars = "!#$%^&*()[]-:₹,'/"
                                         for specialChar in specialChars:
                                             x = x.replace(specialChar, '')
                                             x=x.replace(' ','_')
@@ -260,20 +241,15 @@ class Email_To_BQ():
                                         df.drop(columns = ["Unnamed: 0"], axis=1,inplace=True)
                                     except:
                                         pass
-                                    
+
                                     col_rename = {}
                                     for col in df.columns:
                                         col_new = column_name_formatting(col)
                                         col_rename[col] = col_new.strip()
-                                        #df[col] = col.replace("/","")
-                                      #  print("collllll:-",col)
-                                    #print("col_new:-",col_rename)
-                                    df.rename(columns = col_rename, inplace = True)
-                                    #print('columns = ', df.columns)
-                                    #df = df.loc[:,upload_params.loc[self.param_ID,'Input Column Names'].split(',') + ['updated_datetime']]
-                                    #df.columns = upload_params.loc[self.param_ID,'Destination Column Names'].split(',') + ['updated_datetime']
 
-                                    #df['updated_datetime'] = df['updated_datetime'].apply(lambda x: pd.Timestamp(x, tz='Asia/Kolkata'))    #converting string back to timestamp
+                                    df.rename(columns = col_rename, inplace = True)
+
+
                                     df = df.astype(str)
                                     df =df.fillna('nan')
                                     print(df.columns)
@@ -290,7 +266,7 @@ class Email_To_BQ():
                             send_email(from_email=upload_params.loc[self.param_ID,'Error_From_Email'],                   #send an email if there is an error in uploading
                                         from_email_pass=upload_params.loc[self.param_ID,'Error_From_Email_Password'],
                                         to_email=upload_params.loc[self.param_ID,'Error_To_Email'],
-                                        subject='Error in Uploading file(s)', 
+                                        subject='Error in Uploading file(s)',
                                         body_text=f'There was an error in uploading the file to {dest_table} : {e}')
                             print('--Error--\n')
                             print(e)
@@ -300,7 +276,7 @@ class Email_To_BQ():
 if __name__ == '__main__':
     logger.info('Gmail to BigQuery Common Script has started')
     param_id_list = upload_params.index.to_list()
-    param_id_list =[4]
+    
     for param_ID in param_id_list:
         #date = (datetime.today().date() - timedelta(days = 2)).strftime('%d-%b-%Y')
         #print(date)
