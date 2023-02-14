@@ -173,30 +173,38 @@ class Email_To_BQ():
                         #print('plain_text:-',plain_text)
                         #if ('"Onboarding Checkout"' in plain_text) or ('"Onboarding Install to Reg"' in plain_text) or ('"Subscribe - Segment 1 Reg to ATC"' in plain_text) or ('"Subscribe - Segment 2 ATC to Checkout"' in plain_text) or ('"Subscribe - Active Base Onetime"' in plain_text): 
                         word_list = plain_text.replace('=\r\n','').replace('<br>','')  #.split(" ")
-                        ls = ['Daily - New - Onboarding Segment','Daily - New - Onboarding Install to Registration','Daily - New - Retention ATC Drop Funnel','Daily - New - Retention Checkout Drop Funnel']#,'Subscribe - Active Base Onetime']#["Onboarding Install to Reg","Subscribe - Segment 1 Reg to ATC","Subscribe - Segment 2 ATC to Checkout","Subscribe - Active Base Onetime"]
+                        #ls = ['Daily - New - Onboarding Segment','Daily - New - Onboarding Install to Registration','Daily - New - Retention ATC Drop Funnel','Daily - New - Retention Checkout Drop Funnel','Bisleri Campaign Automation']#,'Subscribe - Active Base Onetime']#["Onboarding Install to Reg","Subscribe - Segment 1 Reg to ATC","Subscribe - Segment 2 ATC to Checkout","Subscribe - Active Base Onetime"]
                         #check = [t for t in [word_list.find(i) for i in ls] if t>0 ]
                         #f = False
+
                         #flag = [a for a in check if check>0]
                         #if ('"Onboarding Checkout"' in word_list) or ('"Onboarding Install to Reg"' in word_list) or ('"Subscribe - Segment 1 Reg to ATC"' in word_list) or ('"Subscribe - Segment 2 ATC to Checkout"' in word_list) or ('"Subscribe - Active Base Onetime"' in word_list): 
                         #if -1 in check:
                         #    pass
                         #else:
+                      #  import pdb;pdb.set_trace()
+                        ls = upload_params.loc[self.param_ID,'File Names'].split(',')
                         for l in ls:
+                            print(l,word_list)
                             if l in word_list:
-                                #print("word_list:-",word_list)
+                                
+                                print("word_list:-",word_list)
                                 word_list = word_list.split(" ")
                                 file_url = [k for k in word_list  if ('https:' in k) or ('file' in k)]
                                 file_url = [p.replace('=\r\n','').replace('<br>','') for p in file_url if 'file' in p][0]
-                                #print('file_url:-',file_url)
+                                print('file_url:-',file_url)
+                            else:
+                                print('Filename Not Matching')
+                                file_url = None
                     fileName = 'ak.csv'
 
 
-                    if fileName:  #not in self.already_ingested_files: #& (str(upload_params.loc[param_ID, 'Attachment File Name']).lower() in str(fileName).lower()):
+                    if file_url is not None:  #not in self.already_ingested_files: #& (str(upload_params.loc[param_ID, 'Attachment File Name']).lower() in str(fileName).lower()):
                         #print(fileName)
                         #print(fileName.split(".csv")[0][-10:])
                         try:
                             if upload_params.loc[self.param_ID, 'File Type'] in ['url_zip_files']:
-                                print("urllll:-",file_url)
+                       #         print("urllll:-",file_url)
                                 resp = urlopen(file_url)
                                 #print("read:-",resp.read())
                                 file_bytes = io.BytesIO(resp.read())
@@ -292,6 +300,7 @@ class Email_To_BQ():
 if __name__ == '__main__':
     logger.info('Gmail to BigQuery Common Script has started')
     param_id_list = upload_params.index.to_list()
+    param_id_list =[4]
     for param_ID in param_id_list:
         #date = (datetime.today().date() - timedelta(days = 2)).strftime('%d-%b-%Y')
         #print(date)
@@ -305,7 +314,7 @@ if __name__ == '__main__':
         if upload_params.loc[param_ID, 'Run Type'] == 'Daily':
             run_gap = int(upload_params.loc[param_ID, 'Run Gap'])
             print('upload_params',upload_params)
-            
+             
             if (upload_params.loc[param_ID, 'Last Run Date'].date() + timedelta(days = run_gap) <= today_date) & (upload_params.loc[param_ID, 'Time to Run'] <= hour_now) & (upload_params.loc[param_ID, 'Report Name'] != 'test'):
                 print('Running...')
                 obj = Email_To_BQ(last_run_date,param_ID=param_ID)

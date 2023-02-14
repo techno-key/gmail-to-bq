@@ -161,6 +161,7 @@ class Email_To_BQ():
 if __name__ == '__main__':
     logger.info('Gmail to BigQuery Common Script has started')
     param_id_list = upload_params.index.to_list()
+    #param_ID = [5,6,7]
     for param_ID in param_id_list:
         #date = (datetime.today().date() - timedelta(days = 2)).strftime('%d-%b-%Y')
         #print(date)
@@ -168,7 +169,7 @@ if __name__ == '__main__':
         today_date = datetime.today().date()                                #today's date
         hour_now = datetime.now(pytz.timezone('Asia/Kolkata')).time().hour      #time now (hour)
         print("Today's date:",today_date, "\nLast Run date:",upload_params.loc[param_ID, 'Last Run Date'].date())
-
+       # import pdb ;pdb.set_trace()
         # For Daily Uploading or uploading with fixed day difference 
         if upload_params.loc[param_ID, 'Run Type'] == 'Daily':
             run_gap = int(upload_params.loc[param_ID, 'Run Gap'])
