@@ -1,4 +1,4 @@
-    # Importing Libraries
+# Importing Libraries
 
 import gspread
 import pandas as pd
@@ -249,6 +249,8 @@ def Email(data):
 
     Email_df.loc[:, Email_df.columns != 'Date'] = Email_df.loc[:, Email_df.columns != 'Date'].astype('str')
     Email_df['Date'] = pd.to_datetime(Email_df['Date'])
+    Email_df['Daily_Spent'] = Email_df['Sent_Total'].astype('int') * 0.02
+    Email_df['Daily_Spent'] =Email_df['Daily_Spent'].astype('int') 
     
     return Email_df
 
@@ -313,6 +315,8 @@ def SMS(data):
 
     sms_df.loc[:, sms_df.columns != 'Date'] = sms_df.loc[:, sms_df.columns != 'Date'].astype('str')
     sms_df['Date'] = pd.to_datetime(sms_df['Date'])
+    sms_df['Daily_Spent'] = sms_df['Total_Sent'].astype('int') * 0.14  
+    sms_df['Daily_Spent'] = sms_df['Daily_Spent'].astype('int')
     
     
     return  sms_df
