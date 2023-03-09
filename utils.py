@@ -97,5 +97,23 @@ LOGGING = {
     }
 }
 
+smytten_table_mapping = {'Daily_New_Onboarding_Install_to_Registration_flows_PUSH':'onboarding_Install_to_reg_push_df',
+'Daily_New_Onboarding_Segment_1_flows_EMAIL':'onboarding_Segment_1_Email_df',
+'Daily_New_Onboarding_Segment_1_flows_PUSH':'onboarding_Segment_1_Push_df',
+'Daily_New_Onboarding_Segment_2_flows_EMAIL':'onboarding_Segment_2_Email_df',
+'Daily_New_Onboarding_Segment_2_flows_PUSH':'onboarding_Segment_2_Push_df',
+'Daily_New_Onboarding_Segment_2_flows_SMS':'onboarding_Segment_2_SMS_df',
+'Daily_New_Onboarding_Segment_3_flows_EMAIL':'onboarding_Segment_3_Email_df',
+'Daily_New_Onboarding_Segment_3_flows_PUSH':'onboarding_Segment_3_Push_df',
+'Daily_New_Onboarding_Segment_3_flows_SMS':'onboarding_Segment_3_SMS_df',
+'Daily_New_Retention_ATC_Drop_Funnel_flows_EMAIL':'Retention_ATC_Drop_Funnel_Email_df',
+'Daily_New_Retention_ATC_Drop_Funnel_flows_PUSH':'Retention_ATC_Drop_Funnel_Push_df',
+'Daily_New_Retention_ATC_Drop_Funnel_flows_SMS':'Retention_ATC_Drop_Funnel_SMS_df',
+'Daily_New_Retention_Checkout_Drop_Funnel_flows_EMAIL':'Retention_Checkout_Drop_Funnel_Email_df',
+'Daily_New_Retention_Checkout_Drop_Funnel_flows_PUSH':'Retention_Checkout_Drop_Funnel_Push_df',
+'Daily_New_Retention_Checkout_Drop_Funnel_flows_SMS':'Retention_Checkout_Drop_Funnel_SMS_df',
+'Sch_New_N7_Flow_Female_flows_PUSH':'N7_Flow_Female_Email_df',
+'Sch_New_N7_FlowMale_flows_PUSH':'N7_Flow_Male_Email_df'
+}
 
 ####

@@ -7,7 +7,7 @@ import email
 import io,zipfile
 from google.oauth2 import service_account
 from google.cloud import bigquery
-from utils import unzip_csv , send_email, get_uploadparams , LOGGING
+from utils import unzip_csv , send_email, get_uploadparams , LOGGING,smytten_table_mapping
 import pandas_gbq
 import csv
 from urllib.request import urlopen
@@ -33,7 +33,7 @@ logger.addHandler(handler)
 
 class Email_To_BQ():
     def __init__(self, start_date, param_ID):
-        start_date = (date.today() - timedelta(0)).strftime('%d-%b-%Y') 
+        start_date = (date.today() - timedelta(4)).strftime('%d-%b-%Y') 
         self.start_date = start_date
         self.param_ID = param_ID
         self.mail = imaplib.IMAP4_SSL('imap.gmail.com')
@@ -204,10 +204,20 @@ class Email_To_BQ():
                                 for one_file in csv_files:
                                     fil = one_file.replace('-_','').split('/')[-1].split('.')
                                     #table_name = (one_file.split("_"))[:-1:]
+                                    #import pdb;pdb.set_trace()
                                     table_name = '_'.join(fil[0].split('_')[:-1:])#.replace('1','one').replace('2','two')
-                                    print('ingesting with this filename',table_name)
+                                    print(table_name)                               
                                     one_file = zf.open(one_file)
+                                    print('table_name',table_name)
+                                
+                                    if len(table_name) is not 0:
+                                        if upload_params.loc[self.param_ID,'Attachment File Name'] ==  'no attachment-Smytten':
+                                            table_name = smytten_table_mapping[table_name]
 
+                                    else:
+                                        pass
+
+                                    print('ingesting with this new  fileneame',table_name)
                                     try:
                                         df = pd.read_csv(one_file)
                                      #   print(df)
@@ -219,7 +229,7 @@ class Email_To_BQ():
 
                                     df['updated_datetime'] = email_date
                                     df = df.astype(str)
-                                    df = df.fillna('')
+                                    df = df.fillna('nan')
                                     #print(df.head(2))
 
                                     def column_name_formatting(x):
@@ -243,20 +253,29 @@ class Email_To_BQ():
                                         pass
 
                                     col_rename = {}
+                                    col_mes = []
                                     for col in df.columns:
-                                        col_new = column_name_formatting(col)
-                                        col_rename[col] = col_new.strip()
+                                        if 'Message' in col:
+                                             col_mes.append(col_new.strip())
+                                        elif 'Message' not in col:
+                                            col_new = column_name_formatting(col)
+                                            col_rename[col] = col_new.strip()
+                                    import pdb;pdb.set_trace()
+                                    
+                                            
 
                                     df.rename(columns = col_rename, inplace = True)
-
+                                    print(col_mes)
+                                    #print(col_rename)
+                                    
 
                                     df = df.astype(str)
                                     df =df.fillna('nan')
                                     print(df.columns)
+                                    print(df.info(verbose=True))
                                     print(df.head(2))
                                     # Uploading data to gbq
-                                    df.to_gbq(upload_params.loc[self.param_ID,'Destination Table'] + '.' + table_name, upload_params.loc[self.param_ID,'Project ID'],
-                                                        credentials=credentials, if_exists=upload_params.loc[self.param_ID, 'IF Exists'])
+                                    df.to_gbq(upload_params.loc[self.param_ID,'Destination Table'] + '.' + table_name, upload_params.loc[self.param_ID,'Project ID'],credentials=credentials, if_exists=upload_params.loc[self.param_ID, 'IF Exists'])
                                     print('ingested')
                         except Exception as e:
                             traceback.print_exc()
@@ -276,10 +295,11 @@ class Email_To_BQ():
 if __name__ == '__main__':
     logger.info('Gmail to BigQuery Common Script has started')
     param_id_list = upload_params.index.to_list()
-    
+    param_id_list = [5] 
     for param_ID in param_id_list:
         #date = (datetime.today().date() - timedelta(days = 2)).strftime('%d-%b-%Y')
         #print(date)
+        
         last_run_date = (upload_params.loc[param_ID, 'Last Run Date'].date() - timedelta(days = 0)).strftime('%d-%b-%Y')    #last run date
         today_date = datetime.today().date()                                #today's date
         hour_now = datetime.now(pytz.timezone('Asia/Kolkata')).time().hour      #time now (hour)
