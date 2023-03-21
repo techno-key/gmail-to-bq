@@ -229,6 +229,7 @@ if __name__ == '__main__':
     logger.info('Gmail to BigQuery Common Script has started')
    # param_id_list = upload_params.index.to_list()
     param_id_list=[6,7,8,9,12]#kfc
+    param_id_list = [12]
     for param_ID in param_id_list:
         date = (datetime.today().date() - timedelta(days = 1)).strftime('%d-%b-%Y')
         #print(date)

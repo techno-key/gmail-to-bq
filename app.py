@@ -161,7 +161,7 @@ class Email_To_BQ():
 if __name__ == '__main__':
     logger.info('Gmail to BigQuery Common Script has started')
     param_id_list = upload_params.index.to_list()
-    param_ID = [8,11]
+   # param_id_list = [4]
     for param_ID in param_id_list:
         #date = (datetime.today().date() - timedelta(days = 2)).strftime('%d-%b-%Y')
         #print(date)

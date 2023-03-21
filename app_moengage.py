@@ -7,7 +7,7 @@ import email
 import io,zipfile
 from google.oauth2 import service_account
 from google.cloud import bigquery
-from utils import unzip_csv , send_email, get_uploadparams , LOGGING,smytten_table_mapping
+from utils import unzip_csv , send_email, get_uploadparams , LOGGING,smytten_table_mapping,column_name_formatting
 import pandas_gbq
 import csv
 from urllib.request import urlopen
@@ -26,14 +26,11 @@ logger = logging.getLogger("Gmail to BigQuery Common")
 handler.setFormatter(ecs_logging.StdlibFormatter())
 logger.addHandler(handler)
 
-# gmail account credentials
-#username=upload_params.loc[param_ID,'Username']
-#password=upload_params.loc[param_ID,'Password']
 
 
 class Email_To_BQ():
     def __init__(self, start_date, param_ID):
-        start_date = (date.today() - timedelta(4)).strftime('%d-%b-%Y') 
+        start_date = (date.today() - timedelta(0)).strftime('%d-%b-%Y')
         self.start_date = start_date
         self.param_ID = param_ID
         self.mail = imaplib.IMAP4_SSL('imap.gmail.com')
@@ -66,17 +63,13 @@ class Email_To_BQ():
             email_date = datetime_obj#.date()
             print('Email date: ',email_date)
 
-        # converts byte literal to string removing b''
             raw_email_string = raw_email.decode('utf-8')
             email_message = email.message_from_string(raw_email_string)
             #print(email_message)
             for header in [ 'subject' ]:
                 subject_ = email_message[header]
                 print("jhds:-",subject_)
-                # print( (header.upper(), email_message[header]))
-                #email_date = subject_.split(".csv")[0][-10:]
-                #print(email_date)
-            
+
 
             for part in email_message.walk():  # goes inside the mail to check for attachment
 
@@ -105,7 +98,6 @@ class Email_To_BQ():
                                 #print("urllll:-",file_url)
                                 resp = urlopen(file_url)
                                 file_bytes = io.BytesIO(resp.read())
-                                #print("file_bytes:-",file_bytes)
                             else:
                                 file_bytes = io.BytesIO(part.get_payload(decode=True))
 
@@ -128,8 +120,8 @@ class Email_To_BQ():
                             print(df.head())
                             credentials = service_account.Credentials.from_service_account_file('Cred_files/' + upload_params.loc[self.param_ID,'Credential Json File'],)
                             bq_client = bigquery.Client(credentials=credentials, project=upload_params.loc[self.param_ID,'Project ID'])
-                            print(df.head())
-                            print('columns = ', df.columns)
+
+                            #print('columns = ', df.columns)
                             df = df.loc[:,upload_params.loc[self.param_ID,'Input Column Names'].split(',') + ['updated_datetime']]
                             df.columns = upload_params.loc[self.param_ID,'Destination Column Names'].split(',') + ['updated_datetime']
                             
@@ -173,115 +165,124 @@ class Email_To_BQ():
 
                         word_list = plain_text.replace('=\r\n','').replace('<br>','')  #.split(" ")
 
-                        ls = upload_params.loc[self.param_ID,'File Names'].split(',')
-
-                        for l in ls:
-                            if l in word_list:
-                                print("word_list:-", word_list)
-                                word_list = word_list.split(" ")
-                                file_url = [k for k in word_list if ('https:' in k) or ('file' in k)]
-                                file_url = [p.replace('=\r\n', '').replace('<br>', '') for p in file_url if 'file' in p][0]
-                                print('file_url:-', file_url)
+                        ls = upload_params.loc[self.param_ID,'File Names'].split(',')   #filter Moengage reports by specific client reports name
 
                         try:
-                            if upload_params.loc[self.param_ID, 'File Type'] in ['url_zip_files']:
-                       #         print("urllll:-",file_url)
-                                resp = urlopen(file_url)
-                                #print("read:-",resp.read())
-                                file_bytes = io.BytesIO(resp.read())
-                                #print("file_bytes:-",file_bytes)
-                            else:
-                                file_bytes = io.BytesIO(part.get_payload(decode=True))
+                            for l in ls:
+                                if l in word_list:
+                                    print("word_list:-", word_list)
+                                    word_list = word_list.split(" ")
+                                    file_url = [k for k in word_list if ('https:' in k) or ('file' in k)]
+                                    file_url = [p.replace('=\r\n', '').replace('<br>', '') for p in file_url if 'file' in p][0]
+                                    print('file_url:-', file_url)
 
-                            if upload_params.loc[self.param_ID, 'File Type'] in ['url_zip_files']:
-                                #csv_files = unzip_files(file_bytes)  # unzipping the file returning final csv data
-                                zf = zipfile.ZipFile(file_bytes)
-                                #zf = zf + '/flow/'
-                                csv_files = zf.namelist()
-                                #final_csv_data = zf.open(csv_file_name)
-                                #df = pd.read_csv(csv_file)
-                                print('csv_files:-',csv_files)
-                                for one_file in csv_files:
-                                    fil = one_file.replace('-_','').split('/')[-1].split('.')
-                                    #table_name = (one_file.split("_"))[:-1:]
-                                    #import pdb;pdb.set_trace()
-                                    table_name = '_'.join(fil[0].split('_')[:-1:])#.replace('1','one').replace('2','two')
-                                    print(table_name)                               
-                                    one_file = zf.open(one_file)
-                                    print('table_name',table_name)
-                                
-                                    if len(table_name) is not 0:
-                                        if upload_params.loc[self.param_ID,'Attachment File Name'] ==  'no attachment-Smytten':
-                                            table_name = smytten_table_mapping[table_name]
+                                else:
+                                    file_url = None
+
+                                if file_url is not None:
+                                    if upload_params.loc[self.param_ID, 'File Type'] in ['url_zip_files']:
+                                        resp = urlopen(file_url)
+                                        file_bytes = io.BytesIO(resp.read())
+                                    else:
+                                        file_bytes = io.BytesIO(part.get_payload(decode=True))
+
+                                    if upload_params.loc[self.param_ID, 'File Type'] in ['url_zip_files']:
+                                        zf = zipfile.ZipFile(file_bytes)
+                                        csv_files = zf.namelist()
+                                        print('csv_files:-',csv_files)
+                                        for one_file in csv_files:
+                                            fil = one_file.replace('-_','').split('/')[-1].split('.')
+                                            table_name = '_'.join(fil[0].split('_')[:-1:])#.replace('1','one').replace('2','two')
+                                            print(table_name)
+                                            one_file = zf.open(one_file)
+                                            print('table_name',table_name)
+
+                                            if len(table_name) is not 0:
+                                                if upload_params.loc[self.param_ID,'Attachment File Name'] ==  'no attachment-Smytten':  #specific table name mapping for smytten
+                                                   try:
+                                                       table_name = smytten_table_mapping[table_name]
+                                                       print('ingesting with this new  fileneame', table_name)
+                                                   except:
+                                                       print('no table mapping for',table_name)
+
+                                                try:
+                                                    df = pd.read_csv(one_file)
+                                                except:
+                                                    try:
+                                                        df = pd.read_excel(one_file)
+                                                    except:
+                                                        continue
+
+                                                df['updated_datetime'] = email_date
+                                                df = df.astype(str)
+                                                df = df.fillna('nan')
+                                                # print(df.head(2))
+
+                                                credentials = service_account.Credentials.from_service_account_file(
+                                                    'Cred_files/' + upload_params.loc[
+                                                        self.param_ID, 'Credential Json File'], )
+                                                bq_client = bigquery.Client(credentials=credentials,
+                                                                            project=upload_params.loc[
+                                                                                self.param_ID, 'Project ID'])
+
+                                                try:
+                                                    df.drop(columns=["Unnamed: 0"], axis=1, inplace=True)
+                                                except:
+                                                    pass
+
+                                                col_rename = {}
+                                                col_mes = []
+                                                for col in df.columns:
+                                                    if 'Message' in col:
+                                                        col_mes.append(col.strip())
+                                                    elif 'Message' not in col:
+                                                        col_new = column_name_formatting(col)
+                                                        col_rename[col] = col_new.strip()
+
+                                                try:
+                                                    df.drop(columns=col_mes, axis=1, inplace=True)
+                                                except:
+                                                    pass
+                                                df.rename(columns=col_rename, inplace=True)
+                                                # print(col_mes)
+
+                                                df = df.astype(str)
+                                                df = df.fillna('nan')
+                                                print(df.columns)
+                                                print(df.info(verbose=True))
+                                                print(df.head(2))
+                                                # Uploading data to gbq
+                                                try:
+                                                    df.to_gbq(upload_params.loc[
+                                                                  self.param_ID, 'Destination Table'] + '.' + table_name,
+                                                              upload_params.loc[self.param_ID, 'Project ID'],
+                                                              credentials=credentials,
+                                                              if_exists=upload_params.loc[self.param_ID, 'IF Exists'])
+                                                    print('ingested')
+                                                    print(today_date)
+                                                except:
+                                                    stamp_date = str(today_date).replace('-', "_")
+                                                    df.to_gbq(upload_params.loc[
+                                                                  self.param_ID, 'Destination Table'] + '.' + table_name + stamp_date,
+                                                              upload_params.loc[self.param_ID, 'Project ID'],
+                                                              credentials=credentials,
+                                                              if_exists=upload_params.loc[self.param_ID, 'IF Exists'])
+                                                    send_email(
+                                                        from_email=upload_params.loc[self.param_ID, 'Error_From_Email'],
+                                                        # send an email if there is an error in uploading
+                                                        from_email_pass=upload_params.loc[
+                                                            self.param_ID, 'Error_From_Email_Password'],
+                                                        to_email=upload_params.loc[self.param_ID, 'Error_To_Email'],
+                                                        subject='Error in Uploading file(s)',
+                                                        body_text=f'Data is ingested to new table {dest_table} : {e}')
+
+
+
 
                                     else:
                                         pass
 
-                                    print('ingesting with this new  fileneame',table_name)
-                                    try:
-                                        df = pd.read_csv(one_file)
-                                     #   print(df)
-                                    except:
-                                        try:
-                                            df = pd.read_excel(one_file)
-                                        except:
-                                            continue
 
-                                    df['updated_datetime'] = email_date
-                                    df = df.astype(str)
-                                    df = df.fillna('nan')
-                                    #print(df.head(2))
-
-                                    def column_name_formatting(x):
-                                        x=x.strip()
-                                        specialChars = "!#$%^&*()[]-:₹,'/"
-                                        for specialChar in specialChars:
-                                            x = x.replace(specialChar, '')
-                                            x=x.replace(' ','_')
-                                            x = x.replace('1','one')
-                                            x = x.replace('2','two')
-                                            if x[0].isdigit():
-                                                x='_'+x
-                                        return x
-
-
-                                    credentials = service_account.Credentials.from_service_account_file('Cred_files/' + upload_params.loc[self.param_ID,'Credential Json File'],)
-                                    bq_client = bigquery.Client(credentials=credentials, project=upload_params.loc[self.param_ID,'Project ID'])
-                                    try:
-                                        df.drop(columns = ["Unnamed: 0"], axis=1,inplace=True)
-                                    except:
-                                        pass
-
-                                    col_rename = {}
-                                    col_mes = []
-                                    if upload_params.loc[self.param_ID,'Attachment File Name']=='no attachment-Smytten':
-                                        for col in df.columns:
-                                            if 'Message' in col:
-                                                col_mes.append(col_new.strip())
-                                            elif 'Message' not in col:
-                                                col_new = column_name_formatting(col)
-                                                col_rename[col] = col_new.strip()
-                                    
-                                    else:
-                                        pass
-                                    
-                                            
-
-                                    df.rename(columns = col_rename, inplace = True)
-                                    print(col_mes)
-                                    #print(col_rename)
-                                    
-
-                                    df = df.astype(str)
-                                    df =df.fillna('nan')
-                                    print(df.columns)
-                                    print(df.info(verbose=True))
-                                    print(df.head(2))
-                                    # Uploading data to gbq
-                                    
-                                    df.to_gbq(upload_params.loc[self.param_ID,'Destination Table'] + '.' + table_name, upload_params.loc[self.param_ID,'Project ID'],credentials=credentials, if_exists=upload_params.loc[self.param_ID, 'IF Exists'])
-                                    print('ingested')
-                                    
                         except Exception as e:
                             traceback.print_exc()
                             logger.exception('ERROR')
@@ -300,7 +301,7 @@ class Email_To_BQ():
 if __name__ == '__main__':
     logger.info('Gmail to BigQuery Common Script has started')
     param_id_list = upload_params.index.to_list()
-   # param_id_list = [5] 
+    param_id_list = [5,10,11] #[5]
     for param_ID in param_id_list:
         #date = (datetime.today().date() - timedelta(days = 2)).strftime('%d-%b-%Y')
         #print(date)
@@ -353,3 +354,4 @@ if __name__ == '__main__':
     #uploadparms_sheet.update([upload_params.columns.values.tolist()] + upload_params.values.tolist())
 
     #logger.info('Gmail to BigQuery Common Script has Stopped')
+
