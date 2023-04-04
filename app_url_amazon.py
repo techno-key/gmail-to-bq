@@ -104,12 +104,17 @@ class Email_To_BQ():
                         file_url = [k for k in word_list if ('https:' in k) or ('http:' in k)]#[0].lstrip('<').rstrip( '>')
                         # final_file_url = [k for k in file_url if (str.strip(upload_params.loc[self.param_ID,'Attachment File Name'])in k )]
                         # print('file url:', final_file_url)
-                        lst = []
-                        for i in file_url:
-                            if str.strip(upload_params.loc[self.param_ID,'Attachment File Name']) in  i:
-                                lst.append(i)
-                        file_url = (lst[0].split('"'))[1]
-                        fileName = str.strip(upload_params.loc[self.param_ID,'Attachment File Name']+str(email_date))
+                        try:
+                            lst = []
+                            for i in file_url:
+                                if str.strip(upload_params.loc[self.param_ID,'Attachment File Name']) in  i:
+                                    lst.append(i)
+                            file_url = (lst[0].split('"'))[1]
+                            fileName = str.strip(upload_params.loc[self.param_ID,'Attachment File Name']+str(email_date))
+
+                        except:
+                            print('no URL found')
+                            pass
 
                     else:
                         fileName = part.get_filename()
@@ -228,8 +233,8 @@ class Email_To_BQ():
 if __name__ == '__main__':
     logger.info('Gmail to BigQuery Common Script has started')
    # param_id_list = upload_params.index.to_list()
-    param_id_list=[6,7,8,9,12]#kfc
-    param_id_list = [12]
+    param_id_list=[6,7,8,9,12,13]#kfc
+    #param_id_list = [13]
     for param_ID in param_id_list:
         date = (datetime.today().date() - timedelta(days = 1)).strftime('%d-%b-%Y')
         #print(date)
